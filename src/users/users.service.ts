@@ -3,9 +3,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly jwtService: JwtService){}
+
   dbUsers = [
     {id: 1, email: 'user1@example.com', name: 'user1', password: '$2b$12$52mVUzI5W73qmLnIA5/B2OWE600w7VcIcGmVpe83HsEtUaeuuHM72'},
     {id: 2, email: 'user2@example.com', name: 'user2', password: '$2b$12$yavbJVeL6g8jPDuOyuFYdeqahyWqmjT/iJeEAd.potHLu1yz7yNrG'},
@@ -23,7 +26,9 @@ export class UsersService {
     const newUser = {...createUserDto, id: Date.now(), password: hashedPassword}
     this.dbUsers.push(_.pick(newUser, ['email', 'id', 'password', 'name']));
     const {password, ...userWithoutPassword} = newUser
-    return userWithoutPassword
+    const token = await this.generateAuthToken(newUser.id, newUser.name, newUser.email)
+    console.log({token})
+    return {access_token: token, ...userWithoutPassword}
   }
 
   findAll() {
@@ -40,5 +45,10 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+  
+  async generateAuthToken(id: number, name: string, email: string){
+    const payload = { id, name, email };
+    return await this.jwtService.signAsync(payload, {privateKey: 'very important'})
   }
 }
