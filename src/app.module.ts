@@ -9,7 +9,10 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [NinjasModule, UsersModule, AuthModule, JwtModule],
+  imports: [NinjasModule, UsersModule, AuthModule, JwtModule.register({
+    global: true,
+    secret: "very-important",
+  }),],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
 })
