@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, Request, UseGuards, ValidationPipe } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { BeltGuard } from 'src/belt/belt.guard';
 import { CreateNinjaDto } from './dto/create-ninja.dto';
 import { UpdateNinjaDto } from './dto/update-ninja.dto';
 import { NinjasService } from './ninjas.service';
-import { BeltGuard } from 'src/belt/belt.guard';
 
 @Controller('ninjas')
 export class NinjasController {
@@ -12,7 +13,9 @@ export class NinjasController {
   }
 
   @Get()
-  getNinjas(@Query('weapon') weapon?: 'stars'| 'rod') {
+  @UseGuards(AuthGuard)
+  getNinjas(@Request() req, @Query('weapon') weapon?: 'stars'| 'rod') {
+    console.log(req.user);
     return this.ninjaService.getNinjas(weapon);
   }
 
@@ -26,7 +29,7 @@ export class NinjasController {
   }
 
   @Post()
-  @UseGuards(BeltGuard)
+  // @UseGuards(BeltGuard)
   createNinja(@Body(new ValidationPipe) createNinjaDto: CreateNinjaDto) {
     return this.ninjaService.createNinja(createNinjaDto)
   }
